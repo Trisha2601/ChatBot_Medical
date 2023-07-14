@@ -75,7 +75,7 @@ def main():
                        page_icon=":pdf:")
     st.write(css, unsafe_allow_html=True)
 
-    image = Image.open(r"C:\Users\Trisha\Documents\CHATBOT\Med_Chatbot\receptionist.jpg")
+    image = Image.open("receptionist.jpg")
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
