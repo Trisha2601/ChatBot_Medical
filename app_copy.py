@@ -11,8 +11,8 @@ from htmlTemplates import css, bot_template, user_template
 from langchain.llms import HuggingFaceHub
 from PIL import Image
 from gtts import gTTS
-from simpleplayer import simpleplayer
 import streamlit as st
+import glob
 import os
 import openai
 
@@ -62,7 +62,6 @@ def handle_userinput(user_question):
     response = st.session_state.conversation({'question': user_question})
     st.session_state.chat_history = response['chat_history']
     
-    res_answer= response['answer']
     for i, message in enumerate(st.session_state.chat_history):
         if i % 2 == 0:
             st.write(user_template.replace(
@@ -70,25 +69,14 @@ def handle_userinput(user_question):
         else:
             st.write(bot_template.replace(
                 "{{MSG}}", message.content), unsafe_allow_html=True)
-    return res_answer
 
-def play_audio(message):
-    ta_tts = gTTS(message)
-    ta_tts.save('trans1.mp3')
-    player = simpleplayer('trans1.mp3')
-    player.play()
-    
 
 def main():
     load_dotenv()
     st.set_page_config(page_title="Chat with multiple PDFs")
     st.write(css, unsafe_allow_html=True)
 
-<<<<<<< Updated upstream
-    image = Image.open("recep.jpg")
-=======
     image = Image.open("receptionist1.jpg")
->>>>>>> Stashed changes
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
@@ -101,11 +89,10 @@ def main():
     st.write(bot_template.replace(
                 "{{MSG}}", "Hello, What can I assist you ?"), unsafe_allow_html=True)
     if user_question:
-        res = handle_userinput(user_question)
-        play_audio(res)
+        handle_userinput(user_question)
 
     with st.sidebar:
-        directory_path = "data\pdf's"
+        directory_path = "data/pdf's"
         # Get all PDF files in the directory
         pdf_files = [os.path.join(directory_path, file) for file in os.listdir(directory_path) if file.endswith(".pdf")]
         if st.button("Process"):
@@ -119,13 +106,9 @@ def main():
                 # create vector store
                 vectorstore = get_vectorstore(text_chunks)
 
-
                 # create conversation chain
                 st.session_state.conversation = get_conversation_chain(
                     vectorstore) 
-                
-                
-                
                 
 if __name__ == '__main__':
     main()
