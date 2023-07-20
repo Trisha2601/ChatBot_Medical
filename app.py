@@ -84,7 +84,7 @@ def main():
     st.set_page_config(page_title="Chat with multiple PDFs")
     st.write(css, unsafe_allow_html=True)
 
-    image = Image.open("receptionist1.jpg")
+    image = Image.open("recep.jpg")
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
