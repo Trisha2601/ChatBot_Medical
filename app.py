@@ -84,11 +84,8 @@ def main():
     st.set_page_config(page_title="Chat with multiple PDFs")
     st.write(css, unsafe_allow_html=True)
 
-<<<<<<< Updated upstream
+
     image = Image.open("recep.jpg")
-=======
-    image = Image.open("receptionist1.jpg")
->>>>>>> Stashed changes
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
