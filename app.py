@@ -10,9 +10,11 @@ from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
 from langchain.llms import HuggingFaceHub
 from PIL import Image
+from gtts import gTTS
 import streamlit as st
-import glob
 import os
+import openai
+
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -20,7 +22,6 @@ def get_pdf_text(pdf_docs):
         pdf_reader = PdfReader(pdf)
         for page in pdf_reader.pages:
             text += page.extract_text()
-    print(text)
     return text
 
 
@@ -53,13 +54,13 @@ def get_conversation_chain(vectorstore):
         retriever=vectorstore.as_retriever(),
         memory=memory
     )
+    
     return conversation_chain
-
 
 def handle_userinput(user_question):
     response = st.session_state.conversation({'question': user_question})
     st.session_state.chat_history = response['chat_history']
-
+    
     for i, message in enumerate(st.session_state.chat_history):
         if i % 2 == 0:
             st.write(user_template.replace(
@@ -67,37 +68,47 @@ def handle_userinput(user_question):
         else:
             st.write(bot_template.replace(
                 "{{MSG}}", message.content), unsafe_allow_html=True)
-
+    
 
 def main():
     load_dotenv()
-    st.set_page_config(page_title="Chat with multiple PDFs",
-                       page_icon=":pdf:")
+    st.set_page_config(page_title="Chat with multiple PDFs")
     st.write(css, unsafe_allow_html=True)
 
-    image = Image.open("receptionist.jpg")
+    image = Image.open("receptionist1.jpg")
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
+
     st.image(image, caption='Receptionist', use_column_width=True)
-    st.header("Chat with multiple PDFs :pdf:")
+    st.header("Chat with multiple PDFs")
     user_question = st.text_input("Ask a question about your documents:")
+    st.write(bot_template.replace(
+                "{{MSG}}", "Hello, What can I assist you ?"), unsafe_allow_html=True)
     if user_question:
         handle_userinput(user_question)
 
-    directory_path = "data/001"
+    with st.sidebar:
+        directory_path = "data/pdf's"
         # Get all PDF files in the directory
-    pdf_files = [os.path.join(directory_path, file) for file in os.listdir(directory_path) if file.endswith(".pdf")]
-        # Now the pdf_files list contains the paths of all the PDF files in the directory
+        pdf_files = [os.path.join(directory_path, file) for file in os.listdir(directory_path) if file.endswith(".pdf")]
+        if st.button("Process"):
+            with st.spinner("Processing"):
+                # get pdf text
+                raw_text = get_pdf_text(pdf_files)
 
-    raw_text = get_pdf_text(pdf_files)
-    text_chunks = get_text_chunks(raw_text)
-    vectorstore = get_vectorstore(text_chunks)
-    st.session_state.conversation = get_conversation_chain(
-                    vectorstore)   
+                # get the text chunks
+                text_chunks = get_text_chunks(raw_text)
 
-
+                # create vector store
+                vectorstore = get_vectorstore(text_chunks)
+                # create conversation chain
+                st.session_state.conversation = get_conversation_chain(
+                    vectorstore) 
+                
+                
+                
 if __name__ == '__main__':
     main()
